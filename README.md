@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Detector de dimensiones de imágenes y PDF
 
 `dimension_detector.py` detecta las dimensiones de archivos de imagen y documentos PDF y las expresa en:
@@ -212,3 +213,6 @@ El resto del programa no necesita modificarse.
 - El programa espera un DPI mayor que cero. La versión actual no valida explícitamente valores cero o negativos.
 - El programa solo lee los archivos y muestra resultados; no redimensiona, convierte ni modifica imágenes o PDFs.
 
+=======
+# dimension_detector
+>>>>>>> origin/main
