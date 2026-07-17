@@ -65,8 +65,8 @@ If no matching files exist, `$archivos` will be empty and the program will repor
 In this program, DPI is used as the resolution for converting between pixels and physical size:
 
 ```text
-pulgadas = píxeles / DPI
-centímetros = pulgadas × 2.54
+inches = pixels / DPI
+centimeters = inches × 2.54
 ```
 
 For example, an image of `3000 × 2400 px` interpreted at 300 DPI corresponds to:
@@ -101,7 +101,7 @@ The width and height in pixels come from the file header and are exact values. T
 A PDF can contain vector graphics, text, and raster images. The size of each page comes from its `MediaBox`, expressed in PDF points, where:
 
 ```text
-1 punto = 1/72 de pulgada
+1 point = 1/72 inch
 ```
 
 For that reason, page size in inches and centimeters is derived directly from the PDF geometry. A PDF does not have a single intrinsic pixel dimension: that value depends on the DPI used to rasterize the page and is always marked as estimated.
@@ -128,11 +128,11 @@ Detector selection is based on the file extension. A supported extension does no
 Normal output shows one row per page:
 
 ```text
-Archivo: imagen.jpg  (image)
-Pág.  px                in              cm              DPI
+File: imagen.jpg  (image)
+Page  px                in              cm              DPI
 -----------------------------------------------------------
 1     3000 x 2400       10.00 x 8.00    25.40 x 20.32   300*
-* DPI estimado/asumido (no venía como metadata exacta en el archivo).
+* Estimated/assumed DPI (it was not present as exact metadata in the file).
 ```
 
 The asterisk next to DPI indicates that the value was assumed, provided via `--dpi`, or calculated for a future PDF rasterization.
@@ -186,21 +186,21 @@ for page in result.pages:
 ## Architecture
 
 ```text
-PageDimensions / DetectionResult  -> modelos de datos (dataclasses)
-UnitConverter                     -> conversiones de unidades centralizadas
-DimensionDetector (ABC)           -> interfaz común (patrón Strategy)
-    ImageDimensionDetector        -> implementación para imágenes con Pillow
-    PDFDimensionDetector          -> implementación para PDF con pypdf
-DetectorFactory                   -> selecciona el detector (patrón Factory)
-DimensionAnalyzer                 -> fachada de alto nivel (patrón Facade)
-CLI (main)                        -> interfaz de línea de comandos
+PageDimensions / DetectionResult  -> data models (dataclasses)
+UnitConverter                     -> centralized unit conversions
+DimensionDetector (ABC)           -> shared interface (Strategy pattern)
+  ImageDimensionDetector        -> image implementation with Pillow
+  PDFDimensionDetector          -> PDF implementation with pypdf
+DetectorFactory                   -> selects the detector (Factory pattern)
+DimensionAnalyzer                 -> high-level facade (Facade pattern)
+CLI (main)                        -> command-line interface
 ```
 
 To add a new format:
 
-1. Crear una clase que herede de `DimensionDetector`.
-2. Implementar `supports()` y `detect()`.
-3. Registrar una instancia en `DetectorFactory._detectors`.
+1. Create a class that inherits from `DimensionDetector`.
+2. Implement `supports()` and `detect()`.
+3. Register an instance in `DetectorFactory._detectors`.
 
 The rest of the program does not need to change.
 
