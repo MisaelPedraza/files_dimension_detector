@@ -1,131 +1,131 @@
-# Detector de dimensiones de imágenes y PDF
+# Image and PDF Dimension Detector
 
-`dimension_detector.py` detecta las dimensiones de archivos de imagen y documentos PDF y las expresa en:
+`dimension_detector.py` detects the dimensions of image files and PDF documents and expresses them in:
 
-- Píxeles (`px`)
-- Pulgadas (`in`)
-- Centímetros (`cm`)
-- DPI utilizados para la conversión
+- Pixels (`px`)
+- Inches (`in`)
+- Centimeters (`cm`)
+- DPI used for conversion
 
-Puede analizar uno o varios archivos desde la línea de comandos y producir una tabla legible o una salida JSON para automatizaciones.
+It can analyze one or more files from the command line and produce a readable table or JSON output for automation.
 
-## Requisitos
+## Requirements
 
-- Python 3.8 o posterior
-- [Pillow](https://python-pillow.org/) para imágenes
-- [pypdf](https://pypdf.readthedocs.io/) para documentos PDF
+- Python 3.8 or later
+- [Pillow](https://python-pillow.org/) for images
+- [pypdf](https://pypdf.readthedocs.io/) for PDF documents
 
-Instala las dependencias con:
+Install the dependencies with:
 
 ```powershell
 python -m pip install pillow pypdf
 ```
 
-Usar `python -m pip` ayuda a instalar los paquetes en el mismo intérprete de Python con el que se ejecutará el programa.
+Using `python -m pip` helps install the packages into the same Python interpreter that will run the program.
 
-## Uso básico
+## Basic Usage
 
-Analizar un PDF y una imagen en una sola ejecución:
+Analyze a PDF and an image in a single run:
 
 ```powershell
 python .\dimension_detector.py archivo.pdf imagen.png
 ```
 
-Analizar una imagen usando 300 DPI para calcular su tamaño físico:
+Analyze an image using 300 DPI to calculate its physical size:
 
 ```powershell
 python .\dimension_detector.py imagen.jpg --dpi 300
 ```
 
-Obtener la salida en formato JSON:
+Get the output in JSON format:
 
 ```powershell
 python .\dimension_detector.py imagen.png --json
 ```
 
-Mostrar la ayuda integrada:
+Show the built-in help:
 
 ```powershell
 python .\dimension_detector.py --help
 ```
 
-## Analizar varios PNG en PowerShell
+## Analyze Multiple PNG Files in PowerShell
 
-En algunos shells de Windows, `*.png` se entrega literalmente al programa en vez de expandirse como una lista de archivos. En PowerShell se puede construir la lista explícitamente:
+In some Windows shells, `*.png` is passed literally to the program instead of expanding into a list of files. In PowerShell, you can build the list explicitly:
 
 ```powershell
 $archivos = Get-ChildItem -File -Filter "*.png" | Select-Object -ExpandProperty FullName
 python .\dimension_detector.py $archivos --json
 ```
 
-Si no existen archivos coincidentes, `$archivos` quedará vacío y el programa mostrará que falta el argumento obligatorio `archivos`.
+If no matching files exist, `$archivos` will be empty and the program will report that the required `archivos` argument is missing.
 
-## Cómo interpretar el DPI
+## How to Interpret DPI
 
-En este programa, el DPI se utiliza como resolución para convertir entre píxeles y tamaño físico:
+In this program, DPI is used as the resolution for converting between pixels and physical size:
 
 ```text
 pulgadas = píxeles / DPI
 centímetros = pulgadas × 2.54
 ```
 
-Por ejemplo, una imagen de `3000 × 2400 px` interpretada a 300 DPI corresponde a:
+For example, an image of `3000 × 2400 px` interpreted at 300 DPI corresponds to:
 
 ```text
 10 × 8 in
 25.4 × 20.32 cm
 ```
 
-El parámetro `--dpi` no cambia el archivo, no aumenta su resolución y no crea detalle nuevo. Únicamente controla la conversión de unidades.
+The `--dpi` parameter does not change the file, increase its resolution, or create new detail. It only controls the unit conversion.
 
-Si no se proporciona `--dpi`:
+If `--dpi` is not provided:
 
-- En imágenes, el programa intenta usar el DPI guardado en los metadatos.
-- Si la imagen no contiene DPI, se asumen 96 DPI y el resultado se marca como estimado.
-- En PDFs, se asumen 96 DPI para calcular una posible representación en píxeles.
+- For images, the program tries to use the DPI stored in metadata.
+- If the image does not contain DPI, 96 DPI is assumed and the result is marked as estimated.
+- For PDFs, 96 DPI is assumed to calculate a possible pixel representation.
 
-El valor de 300 DPI suele emplearse como referencia para impresión de buena calidad, pero debe elegirse según el destino del archivo o las especificaciones de impresión.
+300 DPI is often used as a reference for good print quality, but it should be chosen according to the file's destination or print specifications.
 
-## Precisión de los resultados
+## Result Accuracy
 
-### Imágenes
+### Images
 
-El ancho y el alto en píxeles provienen del encabezado del archivo y son valores exactos. El tamaño en pulgadas y centímetros depende del DPI usado:
+The width and height in pixels come from the file header and are exact values. The size in inches and centimeters depends on the DPI used:
 
-- Con DPI válido en los metadatos, se utiliza ese valor.
-- Con `--dpi`, se utiliza el valor indicado por el usuario y se marca como asumido.
-- Sin metadatos ni `--dpi`, se utilizan 96 DPI y se marca como estimado.
+- With valid DPI in metadata, that value is used.
+- With `--dpi`, the value specified by the user is used and marked as assumed.
+- Without metadata or `--dpi`, 96 DPI is used and marked as estimated.
 
 ### PDF
 
-Un PDF puede contener gráficos vectoriales, texto e imágenes rasterizadas. El tamaño de cada página se obtiene de su `MediaBox`, expresado en puntos PDF, donde:
+A PDF can contain vector graphics, text, and raster images. The size of each page comes from its `MediaBox`, expressed in PDF points, where:
 
 ```text
 1 punto = 1/72 de pulgada
 ```
 
-Por eso, el tamaño de página en pulgadas y centímetros se deriva directamente de la geometría del PDF. Un PDF no tiene una única dimensión intrínseca en píxeles: ese valor depende del DPI al que se decida rasterizar la página y siempre se marca como estimado.
+For that reason, page size in inches and centimeters is derived directly from the PDF geometry. A PDF does not have a single intrinsic pixel dimension: that value depends on the DPI used to rasterize the page and is always marked as estimated.
 
-## Formatos compatibles
+## Supported Formats
 
-Imágenes:
+Images:
 
 ```text
 .png, .jpg, .jpeg, .gif, .bmp, .tiff, .tif,
 .webp, .ico, .ppm, .pgm, .pbm
 ```
 
-Documentos:
+Documents:
 
 ```text
 .pdf
 ```
 
-La selección del detector se realiza por la extensión del archivo. Una extensión compatible no garantiza que el contenido sea válido; si Pillow o pypdf no pueden leerlo, se reportará como archivo ilegible o corrupto.
+Detector selection is based on the file extension. A supported extension does not guarantee that the content is valid; if Pillow or pypdf cannot read it, it will be reported as unreadable or corrupted.
 
-## Salida de consola
+## Console Output
 
-La salida normal muestra una fila por página:
+Normal output shows one row per page:
 
 ```text
 Archivo: imagen.jpg  (image)
@@ -135,11 +135,11 @@ Pág.  px                in              cm              DPI
 * DPI estimado/asumido (no venía como metadata exacta en el archivo).
 ```
 
-El asterisco junto al DPI indica que el valor fue asumido, indicado mediante `--dpi` o calculado para una futura rasterización de PDF.
+The asterisk next to DPI indicates that the value was assumed, provided via `--dpi`, or calculated for a future PDF rasterization.
 
-## Salida JSON
+## JSON Output
 
-La opción `--json` devuelve una lista de resultados:
+The `--json` option returns a list of results:
 
 ```json
 [
@@ -164,11 +164,11 @@ La opción `--json` devuelve una lista de resultados:
 ]
 ```
 
-Si se analizan varios archivos y alguno falla, los errores se escriben en la salida de error, los resultados válidos permanecen en el JSON y el proceso termina con código de salida `1`.
+If multiple files are analyzed and one fails, the errors are written to standard error, valid results remain in the JSON, and the process exits with code `1`.
 
-## Uso como módulo de Python
+## Using It as a Python Module
 
-También se puede importar el analizador desde otro programa:
+You can also import the analyzer from another program:
 
 ```python
 from dimension_detector import DimensionAnalyzer
@@ -181,9 +181,9 @@ for page in result.pages:
     print(page.width_cm, page.height_cm)
 ```
 
-`analyze()` devuelve un objeto `DetectionResult` con la ruta, el tipo de archivo y una lista de objetos `PageDimensions`.
+`analyze()` returns a `DetectionResult` object with the path, file type, and a list of `PageDimensions` objects.
 
-## Arquitectura
+## Architecture
 
 ```text
 PageDimensions / DetectionResult  -> modelos de datos (dataclasses)
@@ -196,19 +196,19 @@ DimensionAnalyzer                 -> fachada de alto nivel (patrón Facade)
 CLI (main)                        -> interfaz de línea de comandos
 ```
 
-Para agregar un formato nuevo:
+To add a new format:
 
 1. Crear una clase que herede de `DimensionDetector`.
 2. Implementar `supports()` y `detect()`.
 3. Registrar una instancia en `DetectorFactory._detectors`.
 
-El resto del programa no necesita modificarse.
+The rest of the program does not need to change.
 
-## Limitaciones actuales
+## Current Limitations
 
-- La detección del formato se basa en la extensión, no en la firma binaria del archivo.
-- En PDFs se usa `MediaBox`; un `CropBox` o una rotación de página podría hacer que el tamaño visual esperado sea diferente.
-- Los GIF y TIFF con varios fotogramas se tratan como una sola imagen y no se enumeran sus fotogramas.
-- El programa espera un DPI mayor que cero. La versión actual no valida explícitamente valores cero o negativos.
-- El programa solo lee los archivos y muestra resultados; no redimensiona, convierte ni modifica imágenes o PDFs.
+- Format detection is based on the file extension, not the file's binary signature.
+- PDFs use `MediaBox`; a `CropBox` or page rotation could make the expected visual size different.
+- Multi-frame GIFs and TIFFs are treated as a single image, and their frames are not enumerated.
+- The program expects a DPI greater than zero. The current version does not explicitly validate zero or negative values.
+- The program only reads files and shows results; it does not resize, convert, or modify images or PDFs.
 
