@@ -212,6 +212,3 @@ El resto del programa no necesita modificarse.
 - El programa espera un DPI mayor que cero. La versión actual no valida explícitamente valores cero o negativos.
 - El programa solo lee los archivos y muestra resultados; no redimensiona, convierte ni modifica imágenes o PDFs.
 
-=======
-# dimension_detector
->>>>>>> origin/main
