@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Detector de dimensiones de imágenes y PDF
 
 `dimension_detector.py` detecta las dimensiones de archivos de imagen y documentos PDF y las expresa en:
